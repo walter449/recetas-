@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Generador de Recetas</title>
+  <link rel="icon" href="/static/favicon.ico"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0f0e0c;
+      --surface: #1a1814;
+      --card: #221f1a;
+      --border: #2e2a24;
+      --accent: #e8a045;
+      --accent2: #c45c2a;
+      --text: #f0ebe3;
+      --muted: #7a7268;
+      --success: #4caf79;
+      --danger: #e05252;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      background-image: radial-gradient(ellipse at 20% 0%, #2a1f0e44 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 100%, #1a0e0544 0%, transparent 60%);
+    }
+
+    /* HEADER */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0;
+      background: #0f0e0cee;
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--text); }
+    #userInfo {
+      display: flex; align-items: center; gap: 1rem;
+      font-size: 0.85rem; color: var(--muted);
+    }
+    #userInfo strong { color: var(--text); }
+    .btn-sm {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.35rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+    .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* LAYOUT */
+    .app { display: none; }
+    main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+    .grid { display: grid; grid-template-columns: 340px 1fr; gap: 1.5rem; align-items: start; }
+
+    /* AUTH */
+    #authSection {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .auth-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.5rem;
+      width: 100%; max-width: 400px;
+    }
+    .auth-box h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      margin-bottom: 0.3rem;
+    }
+    .auth-box p { color: var(--muted); margin-bottom: 2rem; font-size: 0.9rem; }
+    .tabs { display: flex; gap: 0; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+    .tab {
+      background: none; border: none; color: var(--muted);
+      padding: 0.6rem 1.2rem; cursor: pointer; font-size: 0.9rem;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+      transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+    }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* FORMS */
+    .form-group { margin-bottom: 1rem; }
+    label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    input {
+      width: 100%; background: var(--card); border: 1px solid var(--border);
+      color: var(--text); padding: 0.7rem 1rem; border-radius: 8px;
+      font-size: 0.95rem; font-family: 'DM Sans', sans-serif;
+      transition: border-color 0.2s;
+    }
+    input:focus { outline: none; border-color: var(--accent); }
+    .btn {
+      width: 100%; padding: 0.8rem; border: none; border-radius: 8px;
+      font-size: 0.95rem; font-weight: 500; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-outline {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--text); width: auto; padding: 0.6rem 1.2rem;
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-danger {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--muted); width: auto; padding: 0.4rem 0.8rem;
+      font-size: 0.8rem; border-radius: 6px;
+    }
+    .btn-danger:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* CARDS */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+    }
+    .card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    /* INGREDIENTES */
+    .ing-form { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .ing-form input { flex: 1; min-width: 80px; }
+    .ing-form .btn-primary { width: auto; padding: 0.6rem 1rem; flex-shrink: 0; }
+    .ing-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .ing-item {
+      display: flex; justify-content: space-between; align-items: center;
+      background: var(--card); padding: 0.6rem 0.9rem; border-radius: 8px;
+      font-size: 0.9rem; border: 1px solid var(--border);
+      animation: fadeIn 0.3s ease;
+    }
+    .ing-item span { color: var(--muted); font-size: 0.8rem; margin-left: 0.4rem; }
+    .empty-msg { color: var(--muted); font-size: 0.85rem; text-align: center; padding: 1.5rem 0; }
+
+    /* GENERAR */
+    .generate-section { margin-top: 1rem; }
+    .btn-generate {
+      width: 100%; padding: 1rem; border: none; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-size: 1rem; font-weight: 600;
+      cursor: pointer; font-family: 'Playfair Display', serif;
+      transition: all 0.2s; letter-spacing: 0.3px;
+    }
+    .btn-generate:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 8px 24px #e8a04540; }
+    .btn-generate:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* RECETAS */
+    .recetas-list { display: flex; flex-direction: column; gap: 1rem; }
+    .receta-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.4rem;
+      animation: fadeIn 0.4s ease;
+    }
+    .receta-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.8rem; }
+    .receta-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem; font-weight: 700;
+    }
+    .badges { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.4rem; }
+    .badge {
+      font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 20px;
+      background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+      text-transform: capitalize;
+    }
+    .badge.dif-fácil { border-color: var(--success); color: var(--success); }
+    .badge.dif-media { border-color: var(--accent); color: var(--accent); }
+    .badge.dif-difícil { border-color: var(--danger); color: var(--danger); }
+
+    .receta-body { font-size: 0.88rem; color: var(--muted); line-height: 1.6; }
+    .receta-section { margin-top: 0.8rem; }
+    .receta-section strong { color: var(--text); display: block; margin-bottom: 0.3rem; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .receta-section ol { padding-left: 1.2rem; }
+    .receta-section li { margin-bottom: 0.2rem; }
+    .ing-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+    .ing-tag {
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.78rem;
+    }
+    .receta-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid var(--border); }
+    .stars { display: flex; gap: 0.2rem; }
+    .star {
+      background: none; border: none; cursor: pointer;
+      font-size: 1.2rem; color: var(--border); transition: color 0.15s;
+      padding: 0;
+    }
+    .star:hover, .star.active { color: var(--accent); }
+
+    /* TOAST */
+    #toast {
+      position: fixed; bottom: 2rem; right: 2rem;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); padding: 0.8rem 1.2rem; border-radius: 10px;
+      font-size: 0.88rem; opacity: 0; transform: translateY(10px);
+      transition: all 0.3s; z-index: 9999; pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+    #toast.success { border-color: var(--success); }
+    #toast.error { border-color: var(--danger); }
+
+    /* LOADER */
+    .loader { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.9rem; }
+    .spinner {
+      width: 28px; height: 28px; border: 2px solid var(--border);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 0.8rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem; margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="authSection">
+  <div class="auth-box">
+    <h2>Chef<span>IA</span></h2>
+    <p>Genera recetas con lo que tienes en casa</p>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login')">Iniciar sesión</button>
+      <button class="tab" onclick="switchTab('registro')">Registrarse</button>
+    </div>
+
+    <div id="loginForm">
+      <div class="form-group">
+        <label>Usuario</label>
+        <input type="text" id="loginUser" placeholder="tu_usuario"/>
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="loginPass" placeholder="••••••"/>
+      </div>
+      <button class="btn btn-primary" onclick="login()">Entrar</button>
+    </div>
+
+    <div id="registroForm" style="display:none">
+      <div class="form-group">
+        <label>Usuario</label>
+        <input type="text" id="regUser" placeholder="tu_usuario"/>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="regEmail" placeholder="correo@email.com"/>
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="regPass" placeholder="••••••"/>
+      </div>
+      <button class="btn btn-primary" onclick="registro()">Crear cuenta</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="appSection">
+  <header>
+    <div class="logo">Chef<span>IA</span></div>
+    <div id="userInfo">
+      Hola, <strong id="usernameDisplay">—</strong>
+      <button class="btn-sm" onclick="logout()">Salir</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid">
+      <!-- COLUMNA IZQUIERDA -->
+      <div>
+        <div class="card">
+          <h3>🥕 Mi Inventario</h3>
+          <div class="ing-form">
+            <input type="text" id="ingNombre" placeholder="Ingrediente"/>
+            <input type="text" id="ingCantidad" placeholder="Cant." style="max-width:70px"/>
+            <input type="text" id="ingUnidad" placeholder="Unidad" style="max-width:80px"/>
+            <button class="btn btn-primary" onclick="agregarIngrediente()">+</button>
+          </div>
+          <ul class="ing-list" id="ingList">
+            <li class="empty-msg">No tienes ingredientes aún</li>
+          </ul>
+        </div>
+
+        <div class="generate-section" style="margin-top:1rem">
+          <button class="btn-generate" id="btnGenerar" onclick="generarReceta()">
+            ✨ Generar Receta con IA
+          </button>
+        </div>
+      </div>
+
+      <!-- COLUMNA DERECHA -->
+      <div>
+        <div class="section-title">📖 Mis Recetas</div>
+        <div id="recetasList">
+          <div class="empty-msg">Genera tu primera receta →</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  const API = 'http://127.0.0.1:8000';
+  let token = localStorage.getItem('token');
+  let username = localStorage.getItem('username');
+
+  if (token) mostrarApp();
+
+  // ---- AUTH ----
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+    document.getElementById('registroForm').style.display = tab === 'registro' ? 'block' : 'none';
+  }
+
+  async function login() {
+    const user = document.getElementById('loginUser').value;
+    const pass = document.getElementById('loginPass').value;
+    const body = new URLSearchParams({ username: user, password: pass });
+    try {
+      const res = await fetch(`${API}/auth/login`, { method: 'POST', body, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+      const data = await res.json();
+      if (!res.ok) { toast(data.detail || 'Error al iniciar sesión', 'error'); return; }
+      token = data.access_token;
+      username = user;
+      localStorage.setItem('token', token);
+      localStorage.setItem('username', username);
+      mostrarApp();
+    } catch { toast('Error de conexión', 'error'); }
+  }
+
+  async function registro() {
+    const user = document.getElementById('regUser').value;
+    const email = document.getElementById('regEmail').value;
+    const pass = document.getElementById('regPass').value;
+    try {
+      const res = await fetch(`${API}/auth/registro`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: user, email, password: pass }) });
+      const data = await res.json();
+      if (!res.ok) { toast(data.detail || 'Error al registrarse', 'error'); return; }
+      toast('Cuenta creada. Inicia sesión ✓', 'success');
+      switchTab('login');
+    } catch { toast('Error de conexión', 'error'); }
+  }
+
+  function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    token = null;
+    document.getElementById('appSection').style.display = 'none';
+    document.getElementById('authSection').style.display = 'flex';
+  }
+
+  function mostrarApp() {
+    document.getElementById('authSection').style.display = 'none';
+    document.getElementById('appSection').style.display = 'block';
+    document.getElementById('usernameDisplay').textContent = username;
+    cargarIngredientes();
+    cargarRecetas();
+  }
+
+  // ---- INGREDIENTES ----
+  function authHeaders() {
+    return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+  }
+
+  async function cargarIngredientes() {
+    const res = await fetch(`${API}/ingredientes/`, { headers: authHeaders() });
+    const data = await res.json();
+    renderIngredientes(data);
+  }
+
+  function renderIngredientes(ings) {
+    const list = document.getElementById('ingList');
+    if (!ings.length) { list.innerHTML = '<li class="empty-msg">No tienes ingredientes aún</li>'; return; }
+    list.innerHTML = ings.map(i => `
+      <li class="ing-item">
+        <div>🥬 ${i.nombre} <span>${i.cantidad} ${i.unidad}</span></div>
+        <button class="btn-danger" onclick="eliminarIngrediente(${i.id})">✕</button>
+      </li>`).join('');
+  }
+
+  async function agregarIngrediente() {
+    const nombre = document.getElementById('ingNombre').value.trim();
+    const cantidad = document.getElementById('ingCantidad').value.trim();
+    const unidad = document.getElementById('ingUnidad').value.trim();
+    if (!nombre || !cantidad || !unidad) { toast('Completa todos los campos', 'error'); return; }
+    const res = await fetch(`${API}/ingredientes/`, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ nombre, cantidad, unidad }) });
+    if (res.ok) {
+      document.getElementById('ingNombre').value = '';
+      document.getElementById('ingCantidad').value = '';
+      document.getElementById('ingUnidad').value = '';
+      toast(`${nombre} agregado ✓`, 'success');
+      cargarIngredientes();
+    }
+  }
+
+  async function eliminarIngrediente(id) {
+    await fetch(`${API}/ingredientes/${id}`, { method: 'DELETE', headers: authHeaders() });
+    cargarIngredientes();
+    toast('Ingrediente eliminado', 'success');
+  }
+
+  // ---- RECETAS ----
+  async function cargarRecetas() {
+    const res = await fetch(`${API}/recetas/`, { headers: authHeaders() });
+    const data = await res.json();
+    renderRecetas(data);
+  }
+
+  function renderRecetas(recetas) {
+    const cont = document.getElementById('recetasList');
+    if (!recetas.length) { cont.innerHTML = '<div class="empty-msg">Genera tu primera receta →</div>'; return; }
+    cont.innerHTML = recetas.reverse().map(r => {
+      const ings = JSON.parse(r.ingredientes_json || '[]');
+      const pasos = JSON.parse(r.pasos_json || '[]');
+      return `
+      <div class="receta-card" id="receta-${r.id}">
+        <div class="receta-header">
+          <div>
+            <div class="receta-title">${r.nombre_plato}</div>
+            <div class="badges">
+              <span class="badge">⏱ ${r.tiempo_estimado}</span>
+              <span class="badge dif-${r.dificultad}">● ${r.dificultad}</span>
+            </div>
+          </div>
+          <button class="btn-danger" onclick="eliminarReceta(${r.id})">✕</button>
+        </div>
+        <div class="receta-body">
+          <div class="receta-section">
+            <strong>Ingredientes</strong>
+            <div class="ing-tags">${ings.map(i => `<span class="ing-tag">${i.nombre} ${i.cantidad}</span>`).join('')}</div>
+          </div>
+          <div class="receta-section">
+            <strong>Preparación</strong>
+            <ol>${pasos.map(p => `<li>${p}</li>`).join('')}</ol>
+          </div>
+        </div>
+        <div class="receta-footer">
+          <div class="stars" id="stars-${r.id}">
+            ${[1,2,3,4,5].map(n => `<button class="star" onclick="calificar(${r.id}, ${n})">★</button>`).join('')}
+          </div>
+          <span style="font-size:0.75rem;color:var(--muted)">Califica esta receta</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function generarReceta() {
+    const btn = document.getElementById('btnGenerar');
+    btn.disabled = true;
+    btn.textContent = '⏳ Generando...';
+    const cont = document.getElementById('recetasList');
+    cont.innerHTML = '<div class="loader"><div class="spinner"></div>El chef está cocinando tu receta...</div>';
+    try {
+      const res = await fetch(`${API}/recetas/generar`, { method: 'POST', headers: authHeaders() });
+      const data = await res.json();
+      if (!res.ok) { toast(data.detail || 'Error al generar receta', 'error'); cargarRecetas(); return; }
+      toast('¡Receta generada! 🍽️', 'success');
+      cargarRecetas();
+    } catch { toast('Error de conexión', 'error'); cargarRecetas(); }
+    finally { btn.disabled = false; btn.textContent = '✨ Generar Receta con IA'; }
+  }
+
+  async function eliminarReceta(id) {
+    await fetch(`${API}/recetas/${id}`, { method: 'DELETE', headers: authHeaders() });
+    toast('Receta eliminada', 'success');
+    cargarRecetas();
+  }
+
+  async function calificar(recetaId, estrellas) {
+    const res = await fetch(`${API}/recetas/${recetaId}/calificar`, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ estrellas }) });
+    if (res.ok) {
+      document.querySelectorAll(`#stars-${recetaId} .star`).forEach((s, i) => {
+        s.classList.toggle('active', i < estrellas);
+      });
+      toast(`Calificaste con ${estrellas} ★`, 'success');
+    }
+  }
+
+  // ---- TOAST ----
+  function toast(msg, type = 'success') {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = `show ${type}`;
+    setTimeout(() => el.className = '', 3000);
+  }
+</script>
+</body>
+</html>

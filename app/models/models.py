@@ -25,8 +25,8 @@ class Receta(Base):
     __tablename__ = "recetas"
     id = Column(Integer, primary_key=True, index=True)
     nombre_plato = Column(String(200), nullable=False)
-    ingredientes_json = Column(Text)   # JSON string
-    pasos_json = Column(Text)          # JSON string
+    ingredientes_json = Column(Text)
+    pasos_json = Column(Text)
     tiempo_estimado = Column(String(50))
     dificultad = Column(String(30))
     creada_en = Column(DateTime, default=datetime.utcnow)
@@ -37,7 +37,7 @@ class Receta(Base):
 class Calificacion(Base):
     __tablename__ = "calificaciones"
     id = Column(Integer, primary_key=True, index=True)
-    estrellas = Column(Integer, nullable=False)  # 1 a 5
+    estrellas = Column(Integer, nullable=False)
     receta_id = Column(Integer, ForeignKey("recetas.id"))
     usuario_id = Column(Integer, ForeignKey("usuarios.id"))
     receta = relationship("Receta", back_populates="calificaciones")

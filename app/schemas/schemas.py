@@ -31,4 +31,4 @@ class RecetaOut(BaseModel):
         from_attributes = True
 
 class CalificacionCreate(BaseModel):
-    estrellas: int  # 1 a 5
+    estrellas: int
